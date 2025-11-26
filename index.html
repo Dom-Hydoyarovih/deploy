@@ -1,122 +1,110 @@
-/*
-Telegram Mini App Template — Pure JavaScript + HTML (no uploads)
-Поддержка:
-- Мульти-оконная навигация
-- Интеграция с Telegram WebApp API
-- Отображение изображений, полученных из initDataUnsafe (например, фото профиля пользователя)
-*/
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Telegram Mini App — JS Template (No Upload)</title>
+<title>Telegram Mini App — JS Template</title>
+<link href="https://fonts.googleapis.com/css2?family=Arsenal+SC:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   body {
     margin: 0;
-    background: #0e1526;
-    color: #fff;
-    font-family: Arial, sans-serif;
+    background: #ffffff;
+    color: #000000;
+    font-family: "Roboto", sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
   .container { padding: 12px; max-width: 640px; margin: auto; }
   .window {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.1);
     border-radius: 12px;
-    padding: 12px;
+    padding: 16px;
     margin-bottom: 12px;
   }
-  .btn { background: rgba(255,255,255,0.12); border: none; padding: 10px 14px; border-radius: 8px; color: #fff; cursor: pointer; width: 100%; }
-  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
-  .thumb { width: 100%; height: 100px; object-fit: cover; border-radius: 6px; cursor: pointer; }
-  .stack-item { position: absolute; inset: 0; overflow: auto; padding-bottom: 40px; }
 
-  /* MOBILE OPTIMIZATION */
+  .btn {
+    border: none;
+    padding: 14px;
+    border-radius: 35px;
+    color: #ffffff;
+    cursor: pointer;
+    width: 100%;
+    font-size: 17px;
+    font-family: "Arsenal SC", sans-serif;
+    margin-top: 12px;
+  }
+  .btn-green { background: #4C614E; }
+  .btn-brown { background: #775541; }
+  .btn-disabled { opacity: 0.5; pointer-events: none; }
+
+  h2, h3 { font-family: "Arsenal SC", sans-serif; color: #000; }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+  }
+  .thumb {
+    width: 100%; height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
   @media (max-width: 480px) {
     .container { padding: 8px; }
-    h2, h3 { font-size: 18px; }
-    .btn { padding: 12px; font-size: 15px; }
+    .btn { font-size: 16px; padding: 12px; }
     .thumb { height: 90px; }
-    .window { padding: 10px; border-radius: 10px; }
   }
 </style>
 </head>
 <body>
 <div class="container">
-  <h2>Telegram Mini App — JS + WebApp API</h2>
   <div id="app"></div>
 </div>
 
 <script>
-// Telegram API
 const tg = window.Telegram?.WebApp || null;
 if (tg) tg.expand();
 
-// Example images: using Telegram user photo (if exists)
-let images = [];
-if (tg?.initDataUnsafe?.user?.photo_url) {
-  images.push({ id: genId(), name: "User Photo", url: tg.initDataUnsafe.user.photo_url });
+let images = [
+  { id: genId(), name: "Demo 1", url: "https://picsum.photos/300/300?1" },
+  { id: genId(), name: "Demo 2", url: "https://picsum.photos/300/300?2" },
+  { id: genId(), name: "Demo 3", url: "https://picsum.photos/300/300?3" }
+];
+
+let currentScreen = { name: "start", props: {} };
+
+function navigate(name, props = {}) {
+  currentScreen = { name, props };
+  render();
 }
-// Add placeholder images for demo
-images.push(
-  { id: genId(), name: "Example 1", url: "https://picsum.photos/300/300?random=1" },
-  { id: genId(), name: "Example 2", url: "https://picsum.photos/300/300?random=2" },
-  { id: genId(), name: "Example 3", url: "https://picsum.photos/300/300?random=3" }
-);
-
-// Stack
-const stack = [ { name: "home", props: {} } ];
-
-function pushWindow(name, props={}) { stack.push({name,props}); render(); }
-function popWindow() { if (stack.length > 1) stack.pop(); render(); }
-function replaceWindow(name, props={}) { stack.pop(); stack.push({name,props}); render(); }
 
 function render() {
   const root = document.getElementById("app");
-  root.innerHTML = "";
-
-  stack.forEach((win, idx) => {
-    const el = document.createElement("div");
-    el.className = "stack-item";
-    el.style.zIndex = 10 + idx;
-    el.innerHTML = templates[win.name](win.props);
-    root.appendChild(el);
-  });
-
+  root.innerHTML = templates[currentScreen.name](currentScreen.props);
   attachEvents();
 }
 
-// Templates
 const templates = {
-  home: () => `
-    <div class="window">
-      <h3>Главное окно</h3>
-      <p>Интеграция с Telegram WebApp API:</p>
-      <pre style="white-space:pre-wrap;font-size:12px;background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;">${tg ? JSON.stringify({user: tg.initDataUnsafe.user, platform: tg.platform}, null, 2) : "Not inside Telegram"}</pre>
+  start: () => `
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="logo2.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
 
-      <h4 style="margin-top:20px;">Изображения:</h4>
+      <button class="btn btn-green" id="choose-scenario">Выбрать сценарий</button>
+      <button class="btn btn-brown btn-disabled">Случайная игра</button>
+    </div>
+  `,
+
+  scenario_list: () => `
+    <div class="window">
+      <h3>Выбор сценария</h3>
+
       <div class="gallery-grid">
         ${images.map(img => `<img src="${img.url}" class="thumb view-img" data-id="${img.id}">`).join("")}
       </div>
 
-      <div style="margin-top:12px; display:flex; gap:8px;">
-        <button class="btn" id="open-gallery">Открыть галерею</button>
-        <button class="btn" id="open-settings">Настройки</button>
-      </div>
-    </div>
-  `,
-
-  gallery: () => `
-    <div class="window">
-      <div style="display:flex; justify-content:space-between;">
-        <h3>Галерея</h3>
-        <button class="btn" id="close">Закрыть</button>
-      </div>
-      <div class="gallery-grid" style="margin-top:12px;">
-        ${images.map(img => `<img src="${img.url}" data-id="${img.id}" class="thumb view-img">`).join("")}
-      </div>
+      <button class="btn btn-brown" id="back">Назад</button>
     </div>
   `,
 
@@ -124,46 +112,31 @@ const templates = {
     const img = images.find(x => x.id === id);
     return `
       <div class="window">
-        <div style="display:flex; justify-content:space-between;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
           <h3>${img.name}</h3>
-          <button class="btn" id="close">Закрыть</button>
+          <button class="btn btn-brown" id="back">Закрыть</button>
         </div>
         <img src="${img.url}" style="width:100%; max-height:70vh; object-fit:contain; margin-top:12px;" />
       </div>
     `;
-  },
-
-  settings: () => `
-    <div class="window">
-      <h3>Настройки</h3>
-      <label><input type="checkbox"> Анимация</label><br>
-      <label><input type="checkbox"> Тёмная тема</label>
-
-      <div style="margin-top:12px;">
-        <button class="btn" id="close">Закрыть</button>
-      </div>
-    </div>
-  `,
+  }
 };
 
-// Event binding
 function attachEvents() {
-  const sel = id => document.getElementById(id);
+  const choose = document.getElementById("choose-scenario");
+  if (choose) choose.onclick = () => navigate("scenario_list");
 
-  const openGallery = sel("open-gallery");
-  if (openGallery) openGallery.onclick = () => pushWindow("gallery");
-
-  const openSettings = sel("open-settings");
-  if (openSettings) openSettings.onclick = () => pushWindow("settings");
-
-  document.querySelectorAll("#close").forEach(b => b.onclick = popWindow);
+  const back = document.getElementById("back");
+  if (back) back.onclick = () => navigate("start");
 
   document.querySelectorAll(".view-img").forEach(img => {
-    img.onclick = () => pushWindow("viewer", { id: img.dataset.id });
+    img.onclick = () => navigate("viewer", { id: img.dataset.id });
   });
 }
 
-function genId() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+function genId() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
 
 render();
 </script>
