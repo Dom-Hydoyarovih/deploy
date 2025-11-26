@@ -1,0 +1,161 @@
+/*
+Telegram Mini App Template — Pure JavaScript + HTML (no uploads)
+Поддержка:
+- Мульти-оконная навигация
+- Интеграция с Telegram WebApp API
+- Отображение изображений, полученных из initDataUnsafe (например, фото профиля пользователя)
+*/
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Telegram Mini App — JS Template (No Upload)</title>
+<style>
+  body {
+    margin: 0;
+    background: #0e1526;
+    color: #fff;
+    font-family: Arial, sans-serif;
+  }
+  .container { padding: 12px; max-width: 640px; margin: auto; }
+  .window {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .btn { background: rgba(255,255,255,0.12); border: none; padding: 6px 12px; border-radius: 6px; color: #fff; cursor: pointer; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .thumb { width: 100%; height: 100px; object-fit: cover; border-radius: 6px; cursor: pointer; }
+  .stack-item { position: absolute; inset: 0; overflow: auto; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Telegram Mini App — JS + WebApp API</h2>
+  <div id="app"></div>
+</div>
+
+<script>
+// Telegram API
+const tg = window.Telegram?.WebApp || null;
+if (tg) tg.expand();
+
+// Example images: using Telegram user photo (if exists)
+let images = [];
+if (tg?.initDataUnsafe?.user?.photo_url) {
+  images.push({ id: genId(), name: "User Photo", url: tg.initDataUnsafe.user.photo_url });
+}
+// Add placeholder images for demo
+images.push(
+  { id: genId(), name: "Example 1", url: "https://picsum.photos/300/300?random=1" },
+  { id: genId(), name: "Example 2", url: "https://picsum.photos/300/300?random=2" },
+  { id: genId(), name: "Example 3", url: "https://picsum.photos/300/300?random=3" }
+);
+
+// Stack
+const stack = [ { name: "home", props: {} } ];
+
+function pushWindow(name, props={}) { stack.push({name,props}); render(); }
+function popWindow() { if (stack.length > 1) stack.pop(); render(); }
+function replaceWindow(name, props={}) { stack.pop(); stack.push({name,props}); render(); }
+
+function render() {
+  const root = document.getElementById("app");
+  root.innerHTML = "";
+
+  stack.forEach((win, idx) => {
+    const el = document.createElement("div");
+    el.className = "stack-item";
+    el.style.zIndex = 10 + idx;
+    el.innerHTML = templates[win.name](win.props);
+    root.appendChild(el);
+  });
+
+  attachEvents();
+}
+
+// Templates
+const templates = {
+  home: () => `
+    <div class="window">
+      <h3>Главное окно</h3>
+      <p>Интеграция с Telegram WebApp API:</p>
+      <pre style="white-space:pre-wrap;font-size:12px;background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;">${tg ? JSON.stringify({user: tg.initDataUnsafe.user, platform: tg.platform}, null, 2) : "Not inside Telegram"}</pre>
+
+      <h4 style="margin-top:20px;">Изображения:</h4>
+      <div class="gallery-grid">
+        ${images.map(img => `<img src="${img.url}" class="thumb view-img" data-id="${img.id}">`).join("")}
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button class="btn" id="open-gallery">Открыть галерею</button>
+        <button class="btn" id="open-settings">Настройки</button>
+      </div>
+    </div>
+  `,
+
+  gallery: () => `
+    <div class="window">
+      <div style="display:flex; justify-content:space-between;">
+        <h3>Галерея</h3>
+        <button class="btn" id="close">Закрыть</button>
+      </div>
+      <div class="gallery-grid" style="margin-top:12px;">
+        ${images.map(img => `<img src="${img.url}" data-id="${img.id}" class="thumb view-img">`).join("")}
+      </div>
+    </div>
+  `,
+
+  viewer: ({ id }) => {
+    const img = images.find(x => x.id === id);
+    return `
+      <div class="window">
+        <div style="display:flex; justify-content:space-between;">
+          <h3>${img.name}</h3>
+          <button class="btn" id="close">Закрыть</button>
+        </div>
+        <img src="${img.url}" style="width:100%; max-height:70vh; object-fit:contain; margin-top:12px;" />
+      </div>
+    `;
+  },
+
+  settings: () => `
+    <div class="window">
+      <h3>Настройки</h3>
+      <label><input type="checkbox"> Анимация</label><br>
+      <label><input type="checkbox"> Тёмная тема</label>
+
+      <div style="margin-top:12px;">
+        <button class="btn" id="close">Закрыть</button>
+      </div>
+    </div>
+  `,
+};
+
+// Event binding
+function attachEvents() {
+  const sel = id => document.getElementById(id);
+
+  const openGallery = sel("open-gallery");
+  if (openGallery) openGallery.onclick = () => pushWindow("gallery");
+
+  const openSettings = sel("open-settings");
+  if (openSettings) openSettings.onclick = () => pushWindow("settings");
+
+  document.querySelectorAll("#close").forEach(b => b.onclick = popWindow);
+
+  document.querySelectorAll(".view-img").forEach(img => {
+    img.onclick = () => pushWindow("viewer", { id: img.dataset.id });
+  });
+}
+
+function genId() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+render();
+</script>
+</body>
+</html>
