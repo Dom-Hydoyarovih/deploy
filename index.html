@@ -93,6 +93,8 @@ const templates = {
 
       <button class="btn btn-green" id="choose-scenario">Выбрать сценарий</button>
       <button class="btn btn-brown">Случайная игра</button>
+      <button class="image-button"><img src="aiassistant.png" alt="Icon" style="width:160px; height:auto; margin-bottom:20px;"></button>
+
     </div>
   `,
 
@@ -172,6 +174,22 @@ const templates = {
      <p>Количество ошибок: 0</p>
       <button class="btn btn-brown" id="mainmenu">Главное меню</button>
      `,
+
+     ai_assistant: () => `
+    <div class="window">
+      <h3>Выберите сценарий для игры</h3>
+
+      <div class="window" style="text-align:center; padding-top:20px;">
+        <button class="btn btn-green" id="game1">Худояр потерял поднос</button>
+        <button class="btn btn-green" id="fake1">Сундук Худояра не открывается</button>
+        <button class="btn btn-green" id="fake2">Худояр куёт поднос</button>
+        <button class="btn btn-green" id="fake3">В доме Худояра гость</button>
+        <button class="btn btn-green" id="fake4">Худояр выбирает поднос для приданого</button>
+      </div>
+
+      <button class="btn btn-brown" id="back">Назад</button>
+    </div>
+  `,
 
 };
 
