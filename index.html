@@ -89,7 +89,7 @@ function render() {
 const templates = {
   start: () => `
     <div class="window" style="text-align:center; padding-top:20px;">
-      <img src="logo2.png" alt="logo" style="width:100px; height:100px; margin-bottom:20px;" />
+      <img src="logo2.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
 
       <button class="btn btn-green" id="choose-scenario">Выбрать сценарий</button>
       <button class="btn btn-brown" style="margin-bottom:20px;">Случайная игра</button>
@@ -178,8 +178,8 @@ const templates = {
      ai_assistant: () => `
       <div class="window" style="text-align:center; padding-top:20px;">
         <h3>Спроси Худояра!</h3>
-        <img src="aimessage.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px; float:left;"/>
-        <button class="btn btn-brown" id="back">Назад</button>
+        <img src="aimessage.png" alt="logo" style=" margin-bottom:20px; float:left;"/>
+        <button class="btn btn-brown" id="back" style="bottom:0">Назад</button>
       </div>
   `
 
