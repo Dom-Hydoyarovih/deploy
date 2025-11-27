@@ -89,11 +89,11 @@ function render() {
 const templates = {
   start: () => `
     <div class="window" style="text-align:center; padding-top:20px;">
-      <img src="logo2.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
+      <img src="logo2.png" alt="logo" style="width:100px; height:100px; margin-bottom:20px;" />
 
       <button class="btn btn-green" id="choose-scenario">Выбрать сценарий</button>
-      <button class="btn btn-brown">Случайная игра</button>
-      <button class="image-button"><img src="aiassistant.png" alt="Icon" style="width:160px; height:auto; margin-bottom:20px;"></button>
+      <button class="btn btn-brown" style="margin-bottom:20px;">Случайная игра</button>
+      <button class="image-button" id="ai_assistant"><img src="aiassistant.png" alt="Icon" style="width:160px; height:auto; margin-bottom:20px;"></button>
 
     </div>
   `,
@@ -176,20 +176,12 @@ const templates = {
      `,
 
      ai_assistant: () => `
-    <div class="window">
-      <h3>Выберите сценарий для игры</h3>
-
       <div class="window" style="text-align:center; padding-top:20px;">
-        <button class="btn btn-green" id="game1">Худояр потерял поднос</button>
-        <button class="btn btn-green" id="fake1">Сундук Худояра не открывается</button>
-        <button class="btn btn-green" id="fake2">Худояр куёт поднос</button>
-        <button class="btn btn-green" id="fake3">В доме Худояра гость</button>
-        <button class="btn btn-green" id="fake4">Худояр выбирает поднос для приданого</button>
+        <h3>Спроси Худояра!</h3>
+        <img src="aimessage.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px; float:left;"/>
+        <button class="btn btn-brown" id="back">Назад</button>
       </div>
-
-      <button class="btn btn-brown" id="back">Назад</button>
-    </div>
-  `,
+  `
 
 };
 
@@ -226,6 +218,9 @@ function attachEvents() {
 
   const mainmenu = document.getElementById("mainmenu");
   if (mainmenu) mainmenu.onclick = () => navigate("start");
+
+   const ai_assistant = document.getElementById("ai_assistant");
+  if (ai_assistant) ai_assistant.onclick = () => navigate("ai_assistant");
 
   document.querySelectorAll(".view-img").forEach(img => {
     img.onclick = () => navigate("viewer", { id: img.dataset.id });
