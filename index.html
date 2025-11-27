@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Telegram Mini App — JS Template</title>
+<title>Дом Худояровых</title>
 <link href="https://fonts.googleapis.com/css2?family=Arsenal+SC:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   body {
@@ -92,34 +92,87 @@ const templates = {
       <img src="logo2.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
 
       <button class="btn btn-green" id="choose-scenario">Выбрать сценарий</button>
-      <button class="btn btn-brown btn-disabled">Случайная игра</button>
+      <button class="btn btn-brown">Случайная игра</button>
     </div>
   `,
 
   scenario_list: () => `
     <div class="window">
-      <h3>Выбор сценария</h3>
+      <h3>Выберите сценарий для игры</h3>
 
-      <div class="gallery-grid">
-        ${images.map(img => `<img src="${img.url}" class="thumb view-img" data-id="${img.id}">`).join("")}
+      <div class="window" style="text-align:center; padding-top:20px;">
+        <button class="btn btn-green" id="game1">Худояр потерял поднос</button>
+        <button class="btn btn-green" id="fake1">Сундук Худояра не открывается</button>
+        <button class="btn btn-green" id="fake2">Худояр куёт поднос</button>
+        <button class="btn btn-green" id="fake3">В доме Худояра гость</button>
+        <button class="btn btn-green" id="fake4">Худояр выбирает поднос для приданого</button>
       </div>
 
       <button class="btn btn-brown" id="back">Назад</button>
     </div>
   `,
+  game1: () =>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="podnos1.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
+     <p>Худояр собирается на день рождения к своему другу и хочет подарить ему свой лучший поднос. Правда он забыл, какой именно из своих лучших подносов он хочет подарить. \n\nПомоги Худояру найти тот самый поднос, которому обрадуется его друг!</p>
+      <button class="btn btn-green" id="quest1">Начать квест!</button>
+  
+     `,
+      quest1:()=>`
+      <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud1.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
+     <p>В последний раз, когда Худояр сортировал подносы, он повесил тот самый поднос на втором этаже своего дома.</p>
+      <button class="btn btn-brown" id="answer1">Пойти на 2 этаж</button>
+     `,
 
-  viewer: ({ id }) => {
-    const img = images.find(x => x.id === id);
-    return `
-      <div class="window">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h3>${img.name}</h3>
-          <button class="btn btn-brown" id="back">Закрыть</button>
-        </div>
-        <img src="${img.url}" style="width:100%; max-height:70vh; object-fit:contain; margin-top:12px;" />
-      </div>
-    `;
-  }
+     answer1:()=>`
+      <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer1.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
+     <p>Сколько девушек изображено на подносе, расположенном в центральной части зала?</p>
+     <input type="text" id="uname" name="name" />
+      <button class="btn btn-green" id="quest2">Ко второму заданию</button>
+     `,
+      
+     quest2:()=>`
+      <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud2.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
+     <p>Точно, в последний раз Худояр видел его на втором этаже, но точно ли в этом углу? \n\nХудояру уже скоро выходить, а он всё ещё не нашёл поднос, нужно ускоряться!</p>
+      <button class="btn btn-brown" id="answer2">Осмотреться в зале</button>
+     `,
+
+         answer2:()=>`
+      <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer2.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
+     <p>Как называется поднос, расположенный в углу зала, фоновым цветом которого является красный?</p>
+     <input type="text" id="uname" name="name" />
+      <button class="btn btn-green" id="quest3">К третьему заданию</button>
+     `,
+
+      quest3:()=>`
+      <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud3.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
+     <p>Посмотрев на красный поднос, Худояра осенило: самый лучший поднос он повесил на первом этаже! \n\nСбежав по лестнице, Худояр начал искать тот самый зелёный поднос.</p>
+      <button class="btn btn-brown" id="answer3">Подойти к подносу</button>
+     `,
+
+        answer3:()=>`
+      <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer3.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
+     <p>Сколько бутонов цветов изображено на зелёном подносе, расположенном в углу зала первого этажа?</p>
+     <input type="text" id="uname" name="name" />
+      <button class="btn btn-green" id="result">Завершить квест</button>
+     `,
+
+        result:()=>`
+      <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="logo2.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
+      <h3>ПОЗДРАВЛЯЕМ!</h3>
+      <h3>ЛУЧШЕ, ЧЕМ 99% ИГРОКОВ</h3>
+     <p>Вы справились за: 5 минут 33 секунды</p>
+     <p>Количество ошибок: 0</p>
+      <button class="btn btn-brown" id="mainmenu">Главное меню</button>
+     `,
+
 };
 
 function attachEvents() {
@@ -128,6 +181,33 @@ function attachEvents() {
 
   const back = document.getElementById("back");
   if (back) back.onclick = () => navigate("start");
+
+  const game1 = document.getElementById("game1");
+  if (game1) game1.onclick = () => navigate("game1");
+
+  const quest1 = document.getElementById("quest1");
+  if (quest1) quest1.onclick = () => navigate("quest1");
+
+  const answer1 = document.getElementById("answer1");
+  if (answer1) answer1.onclick = () => navigate("answer1");
+
+  const quest2 = document.getElementById("quest2");
+  if (quest2) quest2.onclick = () => navigate("quest2");
+
+  const answer2 = document.getElementById("answer2");
+  if (answer2) answer2.onclick = () => navigate("answer2");
+
+  const quest3 = document.getElementById("quest3");
+  if (quest3) quest3.onclick = () => navigate("quest3");
+
+  const answer3 = document.getElementById("answer3");
+  if (answer3) answer3.onclick = () => navigate("answer3");
+
+  const result = document.getElementById("result");
+  if (result) result.onclick = () => navigate("result");
+
+  const mainmenu = document.getElementById("mainmenu");
+  if (mainmenu) mainmenu.onclick = () => navigate("start");
 
   document.querySelectorAll(".view-img").forEach(img => {
     img.onclick = () => navigate("viewer", { id: img.dataset.id });
