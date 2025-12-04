@@ -67,6 +67,24 @@
 const tg = window.Telegram?.WebApp || null;
 if (tg) tg.expand();
 
+let questStartTime = null;
+let mistakes = 0;
+
+const correctAnswers = {
+  answer1: "5",                
+  answer2: "Красная заря",   
+  answer3: "20"                 
+};
+
+function formatTime(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return `${min} минут ${sec} секунд`;
+}
+
+// ============================================================
+
 let images = [
   { id: genId(), name: "Demo 1", url: "https://picsum.photos/300/300?1" },
   { id: genId(), name: "Demo 2", url: "https://picsum.photos/300/300?2" },
@@ -87,14 +105,16 @@ function render() {
 }
 
 const templates = {
+
   start: () => `
     <div class="window" style="text-align:center; padding-top:20px;">
-      <img src="logo2.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
+      <img src="logo2.png" style="width:160px; margin-bottom:20px;" />
 
       <button class="btn btn-green" id="choose-scenario">Выбрать сценарий</button>
       <button class="btn btn-brown" style="margin-bottom:20px;">Случайная игра</button>
-      <button class="image-button" id="ai_assistant"><img src="aiassistant.png" alt="Icon" style="width:160px; height:auto; margin-bottom:20px;"></button>
-
+      <button class="image-button" id="ai_assistant">
+        <img src="aiassistant.png" style="width:160px; height:auto; margin-bottom:20px;">
+      </button>
     </div>
   `,
 
@@ -113,79 +133,89 @@ const templates = {
       <button class="btn btn-brown" id="back">Назад</button>
     </div>
   `,
+
   game1: () =>`
     <div class="window" style="text-align:center; padding-top:20px;">
-      <img src="podnos1.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
-     <p>Худояр собирается на день рождения к своему другу и хочет подарить ему свой лучший поднос. Правда он забыл, какой именно из своих лучших подносов он хочет подарить. \n\nПомоги Худояру найти тот самый поднос, которому обрадуется его друг!</p>
+      <img src="podnos1.png" style="width:160px; margin-bottom:20px;" />
+      <p>Худояр собирается на день рождения к своему другу и хочет подарить ему свой лучший поднос. Правда он забыл, какой именно из своих лучших подносов он хочет подарить. \n\nПомоги Худояру найти тот самый поднос, которому обрадуется его друг!</p>
       <button class="btn btn-green" id="quest1">Начать квест!</button>
-  
-     `,
-      quest1:()=>`
-      <div class="window" style="text-align:center; padding-top:20px;">
-      <img src="hud1.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
-     <p>В последний раз, когда Худояр сортировал подносы, он повесил тот самый поднос на втором этаже своего дома.</p>
+    </div>
+  `,
+
+  quest1: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud1.png" style="width:160px; margin-bottom:20px;">
+      <p>В последний раз, когда Худояр сортировал подносы, он повесил тот самый поднос на втором этаже своего дома.</p>
       <button class="btn btn-brown" id="answer1">Пойти на 2 этаж</button>
-     `,
+    </div>
+  `,
 
-     answer1:()=>`
-      <div class="window" style="text-align:center; padding-top:20px;">
-      <img src="answer1.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
-     <p>Сколько девушек изображено на подносе, расположенном в центральной части зала?</p>
-     <input type="text" id="uname" name="name" />
+  answer1: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer1.png" style="width:160px; margin-bottom:20px;">
+      <p>Сколько девушек изображено на подносе, расположенном в центральной части зала?</p>
+      <input type="text" id="uname">
       <button class="btn btn-green" id="quest2">Ко второму заданию</button>
-     `,
-      
-     quest2:()=>`
-      <div class="window" style="text-align:center; padding-top:20px;">
-      <img src="hud2.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
-     <p>Точно, в последний раз Худояр видел его на втором этаже, но точно ли в этом углу? \n\nХудояру уже скоро выходить, а он всё ещё не нашёл поднос, нужно ускоряться!</p>
+    </div>
+  `,
+
+  quest2: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud2.png" style="width:160px; margin-bottom:20px;">
+      <p>Точно, в последний раз Худояр видел его на втором этаже, но точно ли в этом углу? \n\nХудояру уже скоро выходить, а он всё ещё не нашёл поднос, нужно ускоряться!</p>
       <button class="btn btn-brown" id="answer2">Осмотреться в зале</button>
-     `,
+    </div>
+  `,
 
-         answer2:()=>`
-      <div class="window" style="text-align:center; padding-top:20px;">
-      <img src="answer2.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
-     <p>Как называется поднос, расположенный в углу зала, фоновым цветом которого является красный?</p>
-     <input type="text" id="uname" name="name" />
+  answer2: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer2.png" style="width:160px; margin-bottom:20px;">
+      <p>Как называется поднос, расположенный в углу зала, фоновым цветом которого является красный?</p>
+      <input type="text" id="uname">
       <button class="btn btn-green" id="quest3">К третьему заданию</button>
-     `,
+    </div>
+  `,
 
-      quest3:()=>`
-      <div class="window" style="text-align:center; padding-top:20px;">
-      <img src="hud3.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
-     <p>Посмотрев на красный поднос, Худояра осенило: самый лучший поднос он повесил на первом этаже! \n\nСбежав по лестнице, Худояр начал искать тот самый зелёный поднос.</p>
+  quest3: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud3.png" style="width:160px; margin-bottom:20px;">
+      <p>Посмотрев на красный поднос, Худояра осенило: самый лучший поднос он повесил на первом этаже! \n\nСбежав по лестнице, Худояр начал искать тот самый зелёный поднос.</p>
       <button class="btn btn-brown" id="answer3">Подойти к подносу</button>
-     `,
+    </div>
+  `,
 
-        answer3:()=>`
-      <div class="window" style="text-align:center; padding-top:20px;">
-      <img src="answer3.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
-     <p>Сколько бутонов цветов изображено на зелёном подносе, расположенном в углу зала первого этажа?</p>
-     <input type="text" id="uname" name="name" />
+  answer3: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer3.png" style="width:160px; margin-bottom:20px;">
+      <p>Сколько бутонов цветов изображено на зелёном подносе, расположенном в углу зала первого этажа?</p>
+      <input type="text" id="uname">
       <button class="btn btn-green" id="result">Завершить квест</button>
-     `,
+    </div>
+  `,
 
-        result:()=>`
-      <div class="window" style="text-align:center; padding-top:20px;">
-      <img src="logo2.png" alt="logo" style="width:160px; height:auto; margin-bottom:20px;" />
+  result: (props) => `
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="logo2.png" style="width:160px; margin-bottom:20px;">
       <h3>ПОЗДРАВЛЯЕМ!</h3>
       <h3>ЛУЧШЕ, ЧЕМ 99% ИГРОКОВ</h3>
-     <p>Вы справились за: 5 минут 33 секунды</p>
-     <p>Количество ошибок: 0</p>
+      <p>Вы справились за: <b>${props.time}</b></p>
+      <p>Количество ошибок: <b>${props.mistakes}</b></p>
       <button class="btn btn-brown" id="mainmenu">Главное меню</button>
-     `,
+    </div>
+  `,
 
-     ai_assistant: () => `
-      <div class="window" style="text-align:center; padding-top:20px;">
-        <h3>Спроси Худояра!</h3>
-        <img src="aimessage.png" alt="logo" style=" margin-bottom:20px; float:left;"/>
-        <button class="btn btn-brown" id="back" style="bottom:0">Назад</button>
-      </div>
+  ai_assistant: () => `
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <h3>Спроси Худояра!</h3>
+      <img src="aimessage.png" style="margin-bottom:20px; float:left;">
+      <button class="btn btn-brown" id="back">Назад</button>
+    </div>
   `
-
 };
 
+
 function attachEvents() {
+
   const choose = document.getElementById("choose-scenario");
   if (choose) choose.onclick = () => navigate("scenario_list");
 
@@ -196,35 +226,55 @@ function attachEvents() {
   if (game1) game1.onclick = () => navigate("game1");
 
   const quest1 = document.getElementById("quest1");
-  if (quest1) quest1.onclick = () => navigate("quest1");
+  if (quest1)
+    quest1.onclick = () => {
+      mistakes = 0;
+      questStartTime = Date.now();
+      navigate("quest1");
+    };
 
   const answer1 = document.getElementById("answer1");
   if (answer1) answer1.onclick = () => navigate("answer1");
 
   const quest2 = document.getElementById("quest2");
-  if (quest2) quest2.onclick = () => navigate("quest2");
+  if (quest2) quest2.onclick = () => {
+    const val = document.getElementById("uname")?.value.trim();
+    if (val !== correctAnswers.answer1) mistakes++;
+    navigate("quest2");
+  };
 
   const answer2 = document.getElementById("answer2");
   if (answer2) answer2.onclick = () => navigate("answer2");
 
   const quest3 = document.getElementById("quest3");
-  if (quest3) quest3.onclick = () => navigate("quest3");
+  if (quest3) quest3.onclick = () => {
+    const val = document.getElementById("uname")?.value.trim();
+    if (val !== correctAnswers.answer2) mistakes++;
+    navigate("quest3");
+  };
 
   const answer3 = document.getElementById("answer3");
   if (answer3) answer3.onclick = () => navigate("answer3");
 
   const result = document.getElementById("result");
-  if (result) result.onclick = () => navigate("result");
+  if (result)
+    result.onclick = () => {
+      const val = document.getElementById("uname")?.value.trim();
+      if (val !== correctAnswers.answer3) mistakes++;
+
+      if (questStartTime) {
+        const ms = Date.now() - questStartTime;
+        const formatted = formatTime(ms);
+
+        navigate("result", { time: formatted, mistakes });
+      }
+    };
 
   const mainmenu = document.getElementById("mainmenu");
   if (mainmenu) mainmenu.onclick = () => navigate("start");
 
-   const ai_assistant = document.getElementById("ai_assistant");
+  const ai_assistant = document.getElementById("ai_assistant");
   if (ai_assistant) ai_assistant.onclick = () => navigate("ai_assistant");
-
-  document.querySelectorAll(".view-img").forEach(img => {
-    img.onclick = () => navigate("viewer", { id: img.dataset.id });
-  });
 }
 
 function genId() {
