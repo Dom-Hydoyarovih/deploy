@@ -44,6 +44,7 @@
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 8px;
   }
+
   .thumb {
     width: 100%; height: 100px;
     object-fit: cover;
@@ -51,11 +52,22 @@
     cursor: pointer;
   }
 
+  input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    margin: 12px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+
   @media (max-width: 480px) {
     .container { padding: 8px; }
     .btn { font-size: 16px; padding: 12px; }
     .thumb { height: 90px; }
   }
+  
 </style>
 </head>
 <body>
@@ -69,11 +81,33 @@ if (tg) tg.expand();
 
 let questStartTime = null;
 let mistakes = 0;
+let currentQuest = null; // Текущий активный квест
 
 const correctAnswers = {
-  answer1: "5",                
-  answer2: "Красная заря",   
-  answer3: "20"                 
+  // Квест 1
+  answer1_1: "5",                
+  answer1_2: "Красная заря",   
+  answer1_3: "20",
+  
+  // Квест 2
+  answer2_1: "15",                
+  answer2_2: "Ржаное поле",   
+  answer2_3: "8",
+  
+  // Квест 3
+  answer3_1: "16",                
+  answer3_2: "Крапива",   
+  answer3_3: "8",
+  
+  // Квест 4
+  answer4_1: "12",                
+  answer4_2: "Подсолнухи",   
+  answer4_3: "10",
+  
+  // Квест 5
+  answer5_1: "2",                
+  answer5_2: "Оговский",   
+  answer5_3: "20"             
 };
 
 function formatTime(ms) {
@@ -82,14 +116,6 @@ function formatTime(ms) {
   const sec = totalSec % 60;
   return `${min} минут ${sec} секунд`;
 }
-
-// ============================================================
-
-let images = [
-  { id: genId(), name: "Demo 1", url: "https://picsum.photos/300/300?1" },
-  { id: genId(), name: "Demo 2", url: "https://picsum.photos/300/300?2" },
-  { id: genId(), name: "Demo 3", url: "https://picsum.photos/300/300?3" }
-];
 
 let currentScreen = { name: "start", props: {} };
 
@@ -105,7 +131,6 @@ function render() {
 }
 
 const templates = {
-
   start: () => `
     <div class="window" style="text-align:center; padding-top:20px;">
       <img src="logo2.png" style="width:160px; margin-bottom:20px;" />
@@ -124,10 +149,10 @@ const templates = {
 
       <div class="window" style="text-align:center; padding-top:20px;">
         <button class="btn btn-green" id="game1">Худояр потерял поднос</button>
-        <button class="btn btn-green" id="fake1">Сундук Худояра не открывается</button>
-        <button class="btn btn-green" id="fake2">Худояр куёт поднос</button>
-        <button class="btn btn-green" id="fake3">В доме Худояра гость</button>
-        <button class="btn btn-green" id="fake4">Худояр выбирает поднос для приданого</button>
+        <button class="btn btn-green" id="game2">Худояр куёт поднос</button>
+        <button class="btn btn-green" id="game3">В доме Худояра гость</button>
+        <button class="btn btn-green" id="game4">Худояр выбирает поднос для приданого</button>
+        <button class="btn btn-green" id="game5">Сундук Худояра не открывается</button>
       </div>
 
       <button class="btn btn-brown" id="back">Назад</button>
@@ -138,58 +163,294 @@ const templates = {
     <div class="window" style="text-align:center; padding-top:20px;">
       <img src="podnos1.png" style="width:160px; margin-bottom:20px;" />
       <p>Худояр собирается на день рождения к своему другу и хочет подарить ему свой лучший поднос. Правда он забыл, какой именно из своих лучших подносов он хочет подарить. \n\nПомоги Худояру найти тот самый поднос, которому обрадуется его друг!</p>
-      <button class="btn btn-green" id="quest1">Начать квест!</button>
+      <button class="btn btn-green" id="quest1_1">Начать квест!</button>
     </div>
   `,
 
-  quest1: ()=>`
+  quest1_1: ()=>`
     <div class="window" style="text-align:center; padding-top:20px;">
       <img src="hud1.png" style="width:160px; margin-bottom:20px;">
       <p>В последний раз, когда Худояр сортировал подносы, он повесил тот самый поднос на втором этаже своего дома.</p>
-      <button class="btn btn-brown" id="answer1">Пойти на 2 этаж</button>
+      <button class="btn btn-brown" id="answer1_1">Пойти на 2 этаж</button>
     </div>
   `,
 
-  answer1: ()=>`
+  answer1_1: ()=>`
     <div class="window" style="text-align:center; padding-top:20px;">
       <img src="answer1.png" style="width:160px; margin-bottom:20px;">
       <p>Сколько девушек изображено на подносе, расположенном в центральной части зала?</p>
-      <input type="text" id="uname">
-      <button class="btn btn-green" id="quest2">Ко второму заданию</button>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="quest1_2">Ко второму заданию</button>
     </div>
   `,
 
-  quest2: ()=>`
+  quest1_2: ()=>`
     <div class="window" style="text-align:center; padding-top:20px;">
       <img src="hud2.png" style="width:160px; margin-bottom:20px;">
       <p>Точно, в последний раз Худояр видел его на втором этаже, но точно ли в этом углу? \n\nХудояру уже скоро выходить, а он всё ещё не нашёл поднос, нужно ускоряться!</p>
-      <button class="btn btn-brown" id="answer2">Осмотреться в зале</button>
+      <button class="btn btn-brown" id="answer1_2">Осмотреться в зале</button>
     </div>
   `,
 
-  answer2: ()=>`
+  answer1_2: ()=>`
     <div class="window" style="text-align:center; padding-top:20px;">
       <img src="answer2.png" style="width:160px; margin-bottom:20px;">
       <p>Как называется поднос, расположенный в углу зала, фоновым цветом которого является красный?</p>
-      <input type="text" id="uname">
-      <button class="btn btn-green" id="quest3">К третьему заданию</button>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="quest1_3">К третьему заданию</button>
     </div>
   `,
 
-  quest3: ()=>`
+  quest1_3: ()=>`
     <div class="window" style="text-align:center; padding-top:20px;">
       <img src="hud3.png" style="width:160px; margin-bottom:20px;">
       <p>Посмотрев на красный поднос, Худояра осенило: самый лучший поднос он повесил на первом этаже! \n\nСбежав по лестнице, Худояр начал искать тот самый зелёный поднос.</p>
-      <button class="btn btn-brown" id="answer3">Подойти к подносу</button>
+      <button class="btn btn-brown" id="answer1_3">Подойти к подносу</button>
     </div>
   `,
 
-  answer3: ()=>`
+  answer1_3: ()=>`
     <div class="window" style="text-align:center; padding-top:20px;">
       <img src="answer3.png" style="width:160px; margin-bottom:20px;">
       <p>Сколько бутонов цветов изображено на зелёном подносе, расположенном в углу зала первого этажа?</p>
-      <input type="text" id="uname">
-      <button class="btn btn-green" id="result">Завершить квест</button>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="result1">Завершить квест</button>
+    </div>
+  `,
+
+  game2: () =>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="podnos1.png" style="width:160px; margin-bottom:20px;" />
+      <p>Сегодня особенный день: Худояр решил выковать новый поднос, который станет украшением всей коллекции! Но сначала он хочет вдохновиться лучшими образцами, которые уже создал.</p>
+      <button class="btn btn-green" id="quest2_1">Начать квест!</button>
+    </div>
+  `,
+
+  quest2_1: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud1.png" style="width:160px; margin-bottom:20px;">
+      <p>Вспомни, с какого подноса он всегда начинает вдохновение.</p>
+      <button class="btn btn-brown" id="answer2_1">Осмотреться вокруг</button>
+    </div>
+  `,
+
+  answer2_1: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer1.png" style="width:160px; margin-bottom:20px;">
+      <p>Сколько цветов изображено на подносе, стоящем в центре мастерской Худояровых?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="quest2_2">Ко второму заданию</button>
+    </div>
+  `,
+
+  quest2_2: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud2.png" style="width:160px; margin-bottom:20px;">
+      <p>Рассмотрев центральный поднос, Худояр задумался: кажется, вдохновение он черпал не здесь… Он помнил, что рядом должен быть поднос с тёмным фоном.</p>
+      <button class="btn btn-brown" id="answer2_2">Поискать лучше</button>
+    </div>
+  `,
+
+  answer2_2: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer2.png" style="width:160px; margin-bottom:20px;">
+      <p>Как называется поднос с тёмным фоном, стоящий у правой стены?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="quest2_3">К третьему заданию</button>
+    </div>
+  `,
+
+  quest2_3: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud3.png" style="width:160px; margin-bottom:20px;">
+      <p>Увидев поднос у стены, Худояр улыбнулся — точно, теперь он вспомнил! Перед тем как приступить к ковке, он всегда смотрит на свой любимый ярко-жёлтый поднос на втором этаже.</p>
+      <button class="btn btn-brown" id="answer2_3">Пойти на второй этаж</button>
+    </div>
+  `,
+
+  answer2_3: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer3.png" style="width:160px; margin-bottom:20px;">
+      <p>Сколько завитков орнамента изображено на жёлтом подносе, который висит у лестницы на втором этаже?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="result2">Завершить квест</button>
+    </div>
+  `,
+
+  game3: () =>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="podnos1.png" style="width:160px; margin-bottom:20px;" />
+      <p>Сегодня в гости к Худояру зашёл старый знакомый купец, большой ценитель красивых подносов. Худояр решил устроить ему небольшую экскурсию по коллекции, но забыл, с какого подноса обычно начинает показ.</p>
+      <button class="btn btn-green" id="quest3_1">Начать квест!</button>
+    </div>
+  `,
+
+  quest3_1: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud1.png" style="width:160px; margin-bottom:20px;">
+      <p>Помоги ему не опозориться!</p>
+      <button class="btn btn-brown" id="answer3_1">Пойти на 1 этаж</button>
+    </div>
+  `,
+
+  answer3_1: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer1.png" style="width:160px; margin-bottom:20px;">
+      <p>Сколько фигурок животных изображено на подносе, стоящем у входа на первый этаж?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="quest3_2">Ко второму заданию</button>
+    </div>
+  `,
+
+  quest3_2: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud2.png" style="width:160px; margin-bottom:20px;">
+      <p>Купец внимательно посмотрел на поднос, а Худояр понял, что ошибся: первый поднос в экскурсии должен быть с зелёным узором. Но где он?</p>
+      <button class="btn btn-brown" id="answer3_2">Осмотреться в зале</button>
+    </div>
+  `,
+
+  answer3_2: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer2.png" style="width:160px; margin-bottom:20px;">
+      <p>Как называется поднос с зелёным узором, который висит рядом с большим окном?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="quest3_3">К третьему заданию</button>
+    </div>
+  `,
+
+  quest3_3: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud3.png" style="width:160px; margin-bottom:20px;">
+      <p>Рассмотрев зелёный поднос, Худояр вспомнил: самый главный экспонат, который всегда удивляет гостей, находится на втором этаже — красный праздничный поднос.</p>
+      <button class="btn btn-brown" id="answer3_3">Вернуться на 2 этаж</button>
+    </div>
+  `,
+
+  answer3_3: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer3.png" style="width:160px; margin-bottom:20px;">
+      <p>Сколько лучей у звезды, изображённой на красном праздничном подносе на втором этаже?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="result3">Завершить квест</button>
+    </div>
+  `,
+
+  game4: () =>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="podnos1.png" style="width:160px; margin-bottom:20px;" />
+      <p>Худояр решил выбрать самый достойный поднос для приданого своей дочери. Но коллекция велика, и он запутался в том, какой поднос подходит по традиции.</p>
+      <button class="btn btn-green" id="quest4_1">Начать квест!</button>
+    </div>
+  `,
+
+  quest4_1: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud1.png" style="width:160px; margin-bottom:20px;">
+      <p>Начнём с первого этажа — там должны быть подносы с семейными мотивами.</p>
+      <button class="btn btn-brown" id="answer4_1">Пойти на 1 этаж</button>
+    </div>
+  `,
+
+  answer4_1: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer1.png" style="width:160px; margin-bottom:20px;">
+      <p>Сколько людей изображено на подносе, стоящем у центральной стены первого этажа?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="quest4_2">Ко второму заданию</button>
+    </div>
+  `,
+
+  quest4_2: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud2.png" style="width:160px; margin-bottom:20px;">
+      <p>Худояр вспомнил, что поднос для приданого должен иметь тёплые тона. Кажется, где-то рядом был поднос с золотистым фоном.</p>
+      <button class="btn btn-brown" id="answer4_2">Осмотреться в зале</button>
+    </div>
+  `,
+
+  answer4_2: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer2.png" style="width:160px; margin-bottom:20px;">
+      <p>Как называется поднос с золотистым фоном, расположенный около входа во второй зал?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="quest4_3">К третьему заданию</button>
+    </div>
+  `,
+
+  quest4_3: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud3.png" style="width:160px; margin-bottom:20px;">
+      <p>Рассмотрев золотистый поднос, Худояр уверился, что выбор нужно сделать на втором этаже — там висит его самый благородный синий поднос.</p>
+      <button class="btn btn-brown" id="answer4_3">Пойти на 2 этаж</button>
+    </div>
+  `,
+
+  answer4_3: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer3.png" style="width:160px; margin-bottom:20px;">
+      <p>Сколько бутонов изображено на синем подносе, размещённом в углу второго этажа?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="result4">Завершить квест</button>
+    </div>
+  `,
+
+  game5: () =>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="podnos1.png" style="width:160px; margin-bottom:20px;" />
+      <p>Худояр хотел достать из своего старинного сундука редкий платок, чтобы показать его гостям, но… сундук отказался открываться! Кажется, он снова забыл, какой узор на крышке служил "ключом".</p>
+      <button class="btn btn-green" id="quest5_1">Начать квест!</button>
+    </div>
+  `,
+
+  quest5_1: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud1.png" style="width:160px; margin-bottom:20px;">
+      <p>Помоги Худояру вспомнить, правильно ли он подошёл к сундуку!</p>
+      <button class="btn btn-brown" id="answer5_1">Посмотреть на сундук</button>
+    </div>
+  `,
+
+  answer5_1: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer1.png" style="width:160px; margin-bottom:20px;">
+      <p>Сколько птиц изображено на крышке сундука, стоящего у стены первого этажа?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="quest5_2">Ко второму заданию</button>
+    </div>
+  `,
+
+  quest5_2: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud2.png" style="width:160px; margin-bottom:20px;">
+      <p>Худояр нахмурился. Похоже, это не тот сундук — нужный он вроде бы ставил ближе к лестнице.Но какой именно?</p>
+      <button class="btn btn-brown" id="answer5_2">Подойти к лестнице</button>
+    </div>
+  `,
+
+  answer5_2: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer2.png" style="width:160px; margin-bottom:20px;">
+      <p>Как называется узор на сундуке, который стоит рядом с лестницей и украшен синим орнаментом?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="quest5_3">К третьему заданию</button>
+    </div>
+  `,
+
+  quest5_3: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="hud3.png" style="width:160px; margin-bottom:20px;">
+      <p>Переведя дух и рассмотрев синий орнамент, Худояр хлопнул себя по лбу: настоящий сундук он поднимал на второй этаж! Там-то он и спрятал самый важный сундук с секретным замком.</p>
+      <button class="btn btn-brown" id="answer5_3">Пойти на 2 этаж</button>
+    </div>
+  `,
+
+  answer5_3: ()=>`
+    <div class="window" style="text-align:center; padding-top:20px;">
+      <img src="answer3.png" style="width:160px; margin-bottom:20px;">
+      <p>Сколько бутонов цветов изображено на зелёном подносе, расположенном в углу зала первого этажа?</p>
+      <input type="text" id="answer_input">
+      <button class="btn btn-green" id="result5">Завершить квест</button>
     </div>
   `,
 
@@ -213,68 +474,295 @@ const templates = {
   `
 };
 
-
 function attachEvents() {
-
+  // Общие навигационные кнопки
   const choose = document.getElementById("choose-scenario");
   if (choose) choose.onclick = () => navigate("scenario_list");
 
   const back = document.getElementById("back");
   if (back) back.onclick = () => navigate("start");
 
-  const game1 = document.getElementById("game1");
-  if (game1) game1.onclick = () => navigate("game1");
-
-  const quest1 = document.getElementById("quest1");
-  if (quest1)
-    quest1.onclick = () => {
-      mistakes = 0;
-      questStartTime = Date.now();
-      navigate("quest1");
-    };
-
-  const answer1 = document.getElementById("answer1");
-  if (answer1) answer1.onclick = () => navigate("answer1");
-
-  const quest2 = document.getElementById("quest2");
-  if (quest2) quest2.onclick = () => {
-    const val = document.getElementById("uname")?.value.trim();
-    if (val !== correctAnswers.answer1) mistakes++;
-    navigate("quest2");
-  };
-
-  const answer2 = document.getElementById("answer2");
-  if (answer2) answer2.onclick = () => navigate("answer2");
-
-  const quest3 = document.getElementById("quest3");
-  if (quest3) quest3.onclick = () => {
-    const val = document.getElementById("uname")?.value.trim();
-    if (val !== correctAnswers.answer2) mistakes++;
-    navigate("quest3");
-  };
-
-  const answer3 = document.getElementById("answer3");
-  if (answer3) answer3.onclick = () => navigate("answer3");
-
-  const result = document.getElementById("result");
-  if (result)
-    result.onclick = () => {
-      const val = document.getElementById("uname")?.value.trim();
-      if (val !== correctAnswers.answer3) mistakes++;
-
-      if (questStartTime) {
-        const ms = Date.now() - questStartTime;
-        const formatted = formatTime(ms);
-
-        navigate("result", { time: formatted, mistakes });
-      }
-    };
-
   const mainmenu = document.getElementById("mainmenu");
   if (mainmenu) mainmenu.onclick = () => navigate("start");
 
   const ai_assistant = document.getElementById("ai_assistant");
   if (ai_assistant) ai_assistant.onclick = () => navigate("ai_assistant");
+
+  // Выбор игры
+  const game1 = document.getElementById("game1");
+  if (game1) game1.onclick = () => navigate("game1");
+
+  const game2 = document.getElementById("game2");
+  if (game2) game2.onclick = () => navigate("game2");
+
+  const game3 = document.getElementById("game3");
+  if (game3) game3.onclick = () => navigate("game3");
+
+  const game4 = document.getElementById("game4");
+  if (game4) game4.onclick = () => navigate("game4");
+
+  const game5 = document.getElementById("game5");
+  if (game5) game5.onclick = () => navigate("game5");
+
+  /*=================== КВЕСТ 1 ===================*/
+  const quest1_1 = document.getElementById("quest1_1");
+  if (quest1_1) {
+    quest1_1.onclick = () => {
+      mistakes = 0;
+      questStartTime = Date.now();
+      currentQuest = 1;
+      navigate("quest1_1");
+    };
+  }
+
+  const answer1_1 = document.getElementById("answer1_1");
+  if (answer1_1) answer1_1.onclick = () => navigate("answer1_1");
+
+  const quest1_2 = document.getElementById("quest1_2");
+  if (quest1_2) {
+    quest1_2.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer1_1) mistakes++;
+      navigate("quest1_2");
+    };
+  }
+
+  const answer1_2 = document.getElementById("answer1_2");
+  if (answer1_2) answer1_2.onclick = () => navigate("answer1_2");
+
+  const quest1_3 = document.getElementById("quest1_3");
+  if (quest1_3) {
+    quest1_3.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer1_2) mistakes++;
+      navigate("quest1_3");
+    };
+  }
+
+  const answer1_3 = document.getElementById("answer1_3");
+  if (answer1_3) answer1_3.onclick = () => navigate("answer1_3");
+
+  const result1 = document.getElementById("result1");
+  if (result1) {
+    result1.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer1_3) mistakes++;
+      
+      if (questStartTime) {
+        const ms = Date.now() - questStartTime;
+        const formatted = formatTime(ms);
+        navigate("result", { time: formatted, mistakes });
+      }
+    };
+  }
+
+  /*=================== КВЕСТ 2 ===================*/
+  const quest2_1 = document.getElementById("quest2_1");
+  if (quest2_1) {
+    quest2_1.onclick = () => {
+      mistakes = 0;
+      questStartTime = Date.now();
+      currentQuest = 2;
+      navigate("quest2_1");
+    };
+  }
+
+  const answer2_1 = document.getElementById("answer2_1");
+  if (answer2_1) answer2_1.onclick = () => navigate("answer2_1");
+
+  const quest2_2 = document.getElementById("quest2_2");
+  if (quest2_2) {
+    quest2_2.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer2_1) mistakes++;
+      navigate("quest2_2");
+    };
+  }
+
+  const answer2_2 = document.getElementById("answer2_2");
+  if (answer2_2) answer2_2.onclick = () => navigate("answer2_2");
+
+  const quest2_3 = document.getElementById("quest2_3");
+  if (quest2_3) {
+    quest2_3.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer2_2) mistakes++;
+      navigate("quest2_3");
+    };
+  }
+
+  const answer2_3 = document.getElementById("answer2_3");
+  if (answer2_3) answer2_3.onclick = () => navigate("answer2_3");
+
+  const result2 = document.getElementById("result2");
+  if (result2) {
+    result2.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer2_3) mistakes++;
+      
+      if (questStartTime) {
+        const ms = Date.now() - questStartTime;
+        const formatted = formatTime(ms);
+        navigate("result", { time: formatted, mistakes });
+      }
+    };
+  }
+
+  /*=================== КВЕСТ 3 ===================*/
+  const quest3_1 = document.getElementById("quest3_1");
+  if (quest3_1) {
+    quest3_1.onclick = () => {
+      mistakes = 0;
+      questStartTime = Date.now();
+      currentQuest = 3;
+      navigate("quest3_1");
+    };
+  }
+
+  const answer3_1 = document.getElementById("answer3_1");
+  if (answer3_1) answer3_1.onclick = () => navigate("answer3_1");
+
+  const quest3_2 = document.getElementById("quest3_2");
+  if (quest3_2) {
+    quest3_2.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer3_1) mistakes++;
+      navigate("quest3_2");
+    };
+  }
+
+  const answer3_2 = document.getElementById("answer3_2");
+  if (answer3_2) answer3_2.onclick = () => navigate("answer3_2");
+
+  const quest3_3 = document.getElementById("quest3_3");
+  if (quest3_3) {
+    quest3_3.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer3_2) mistakes++;
+      navigate("quest3_3");
+    };
+  }
+
+  const answer3_3 = document.getElementById("answer3_3");
+  if (answer3_3) answer3_3.onclick = () => navigate("answer3_3");
+
+  const result3 = document.getElementById("result3");
+  if (result3) {
+    result3.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer3_3) mistakes++;
+      
+      if (questStartTime) {
+        const ms = Date.now() - questStartTime;
+        const formatted = formatTime(ms);
+        navigate("result", { time: formatted, mistakes });
+      }
+    };
+  }
+
+  /*=================== КВЕСТ 4 ===================*/
+  const quest4_1 = document.getElementById("quest4_1");
+  if (quest4_1) {
+    quest4_1.onclick = () => {
+      mistakes = 0;
+      questStartTime = Date.now();
+      currentQuest = 4;
+      navigate("quest4_1");
+    };
+  }
+
+  const answer4_1 = document.getElementById("answer4_1");
+  if (answer4_1) answer4_1.onclick = () => navigate("answer4_1");
+
+  const quest4_2 = document.getElementById("quest4_2");
+  if (quest4_2) {
+    quest4_2.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer4_1) mistakes++;
+      navigate("quest4_2");
+    };
+  }
+
+  const answer4_2 = document.getElementById("answer4_2");
+  if (answer4_2) answer4_2.onclick = () => navigate("answer4_2");
+
+  const quest4_3 = document.getElementById("quest4_3");
+  if (quest4_3) {
+    quest4_3.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer4_2) mistakes++;
+      navigate("quest4_3");
+    };
+  }
+
+  const answer4_3 = document.getElementById("answer4_3");
+  if (answer4_3) answer4_3.onclick = () => navigate("answer4_3");
+
+  const result4 = document.getElementById("result4");
+  if (result4) {
+    result4.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer4_3) mistakes++;
+      
+      if (questStartTime) {
+        const ms = Date.now() - questStartTime;
+        const formatted = formatTime(ms);
+        navigate("result", { time: formatted, mistakes });
+      }
+    };
+  }
+
+  /*=================== КВЕСТ 5 ===================*/
+  const quest5_1 = document.getElementById("quest5_1");
+  if (quest5_1) {
+    quest5_1.onclick = () => {
+      mistakes = 0;
+      questStartTime = Date.now();
+      currentQuest = 5;
+      navigate("quest5_1");
+    };
+  }
+
+  const answer5_1 = document.getElementById("answer5_1");
+  if (answer5_1) answer5_1.onclick = () => navigate("answer5_1");
+
+  const quest5_2 = document.getElementById("quest5_2");
+  if (quest5_2) {
+    quest5_2.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer5_1) mistakes++;
+      navigate("quest5_2");
+    };
+  }
+
+  const answer5_2 = document.getElementById("answer5_2");
+  if (answer5_2) answer5_2.onclick = () => navigate("answer5_2");
+
+  const quest5_3 = document.getElementById("quest5_3");
+  if (quest5_3) {
+    quest5_3.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer5_2) mistakes++;
+      navigate("quest5_3");
+    };
+  }
+
+  const answer5_3 = document.getElementById("answer5_3");
+  if (answer5_3) answer5_3.onclick = () => navigate("answer5_3");
+
+  const result5 = document.getElementById("result5");
+  if (result5) {
+    result5.onclick = () => {
+      const val = document.getElementById("answer_input")?.value.trim();
+      if (val !== correctAnswers.answer5_3) mistakes++;
+      
+      if (questStartTime) {
+        const ms = Date.now() - questStartTime;
+        const formatted = formatTime(ms);
+        navigate("result", { time: formatted, mistakes });
+      }
+    };
+  }
 }
 
 function genId() {
